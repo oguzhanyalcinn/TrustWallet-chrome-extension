@@ -1,13 +1,22 @@
 package test;
 
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.IRetryAnalyzer;
+import org.testng.ITestContext;
+import org.testng.ITestNGMethod;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import pages.*;
 import util.Constants;
+import util.retry.Retry;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -21,6 +30,13 @@ public class BaseTest {
     public ChromeDriver driver;
     public WebDriverWait wait;
 
+    @BeforeSuite
+    public void beforeSuite(ITestContext context) {
+        for (ITestNGMethod method : context.getSuite().getAllMethods()) {
+            method.setRetryAnalyzerClass(Retry.class);
+        }
+    }
+
     @BeforeMethod
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
@@ -32,7 +48,24 @@ public class BaseTest {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() {
+    public void tearDown(ITestResult result) throws IOException {
+
+        if (ITestResult.FAILURE == result.getStatus()) {
+            TakesScreenshot ts = driver;
+            File source = ts.getScreenshotAs(OutputType.FILE);
+            FileUtils.copyFile(source, new File("./screenshots/" + result.getName() + ".png"));
+        }
+
+        IRetryAnalyzer retry = result.getMethod().getRetryAnalyzer(result);
+        if (retry == null) {
+            return;
+        }
+
+        if (result.getStatus() == 1) {
+            result.getTestContext().getSkippedTests().removeResult(result.getMethod());
+            result.getTestContext().getFailedTests().removeResult(result.getMethod());
+        }
+
         driver.quit();
     }
 

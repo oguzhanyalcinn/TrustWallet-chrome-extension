@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Trust Wallet">
+    <listeners>
+        <listener class-name="util.listeners.TestListener"/>
+    </listeners>
+    <test name="Chrome Extension Test">
+        <classes>
+            <class name="test.OnboardingTest"/>
+            <class name="test.AnalyticsPageTest"/>
+            <class name="test.ConfirmPageTest"/>
+            <class name="test.HomePageTest"/>
+            <class name="test.PasswordTest"/>
+            <class name="test.PhraseInitialPageTest"/>
+            <class name="test.PhrasePageTest"/>
+            <class name="test.VerifyPageTest"/>
+        </classes>
+    </test>
+</suite>
